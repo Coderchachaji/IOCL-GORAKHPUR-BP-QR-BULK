@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>रिपोर्ट - {{ filename }}</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+
+<header class="header">
+    <img src="{{ url_for('static', filename='images/iocl-logo.png') }}" class="logo" alt="Logo">
+    <h1>गोरखपुर एलपीजी बी.पी. हेतु जर्नी मैनेजमेंट रिपोर्ट (JRM)</h1>
+</header>
+
+<div class="container">
+    
+    <div class="back-button-container">
+        <a href="/" class="back-btn">← वापस जाएं</a>
+    </div>
+
+    <h2>{{ filename }}</h2>
+
+    <div class="report-container">
+
+        <!-- Hindi PDF (from Google Drive) -->
+        {% if hindi_exists %}
+        <div class="card">
+            <div class="card-header">
+                <h3>हिंदी पीडीएफ</h3>
+                <a href="{{ hindi_download_url }}" class="download-btn" target="_blank">⬇ डाउनलोड करें</a>
+            </div>
+            <div class="iframe-container">
+                <iframe src="{{ hindi_preview_url }}" title="Hindi PDF" allowfullscreen></iframe>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-header">
+                <h3>हिंदी पीडीएफ</h3>
+            </div>
+            <div class="error-message">
+                <p>⚠️ हिंदी PDF उपलब्ध नहीं है</p>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- English PDF (from local storage) -->
+        {% if english_exists %}
+        <div class="card">
+            <div class="card-header">
+                <h3>अंग्रेज़ी पीडीएफ</h3>
+                <a href="{{ url_for('pdf_english', filename=filename) }}" class="download-btn" download>⬇ Download</a>
+            </div>
+            <div class="iframe-container">
+                <iframe src="{{ url_for('pdf_english', filename=filename) }}" title="English PDF"></iframe>
+            </div>
+        </div>
+        {% else %}
+        <div class="card">
+            <div class="card-header">
+                <h3>अंग्रेज़ी पीडीएफ</h3>
+            </div>
+            <div class="error-message">
+                <p>⚠️ English PDF not available</p>
+            </div>
+        </div>
+        {% endif %}
+
+    </div>
+</div>
+
+</body>
+</html>

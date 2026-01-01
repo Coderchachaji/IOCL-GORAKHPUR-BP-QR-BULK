@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>जे.आर.एम रिपोर्ट व्यूअर</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto 20px auto;
+        }
+        
+        .search-box {
+            position: relative;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 15px 50px 15px 15px;
+            font-size: 1.1rem;
+            border: 2px solid #02164f;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.3s ease;
+        }
+        
+        .search-input:focus {
+            outline: none;
+            border-color: #f37022;
+            box-shadow: 0 0 0 3px rgba(243, 112, 34, 0.2);
+        }
+        
+        .search-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #02164f;
+            font-size: 1.3rem;
+            pointer-events: none;
+        }
+        
+        .clear-search {
+            position: absolute;
+            right: 45px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: #f37022;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 25px;
+            height: 25px;
+            cursor: pointer;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            transition: all 0.3s ease;
+        }
+        
+        .clear-search:hover {
+            background: #d45a15;
+            transform: translateY(-50%) scale(1.1);
+        }
+        
+        .clear-search.visible {
+            display: flex;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Splash Screen -->
+<div id="splash-screen" class="splash-screen">
+    <div class="splash-content">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='images/logo.png') }}" class="splash-logo splash-logo-left" alt="Company Logo">
+            <div class="logo-divider"></div>
+            <img src="{{ url_for('static', filename='images/iocl-logo.png') }}" class="splash-logo splash-logo-right" alt="IOCL Logo">
+        </div>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div id="main-content" class="main-content hidden">
+    <header class="header">
+        <img src="{{ url_for('static', filename='images/iocl-logo.png') }}" class="logo" alt="IOCL Logo">
+        <h1>गोरखपुर एलपीजी बी.पी. हेतु जर्नी मैनेजमेंट रिपोर्ट (JRM)</h1>
+    </header>
+
+    <div class="container">
+        <h2>रिपोर्ट चुनें</h2>
+
+        {% if files %}
+            <div class="search-container">
+                <div class="search-box">
+                    <input 
+                        type="text" 
+                        id="searchInput" 
+                        class="search-input" 
+                        placeholder="🔍 रिपोर्ट खोजें... (Search reports)"
+                        autocomplete="off"
+                    >
+                    <button id="clearSearch" class="clear-search" title="Clear search">×</button>
+                    <span class="search-icon">🔍</span>
+                </div>
+            </div>
+            
+            <select id="fileSelect" onchange="if(this.value) location.href='/view/' + this.value">
+                <option value="">-- फ़ाइल चुनें --</option>
+                {% for f in files %}
+                    <option value="{{ f }}">{{ f }}</option>
+                {% endfor %}
+            </select>
+            
+            <p class="file-count" id="fileCount">कुल {{ files|length }} रिपोर्ट उपलब्ध हैं</p>
+        {% else %}
+            <div class="no-files">
+                <p>⚠️ कोई रिपोर्ट उपलब्ध नहीं है</p>
+                <p class="hint">कृपया "reports/JRM_ENGLISH" फ़ोल्डर में PDF फ़ाइलें जोड़ें</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <footer class="footer">
+        <p>© Copyright 2026 Urban Technology. All rights reserved.</p>
+    </footer>
+</div>
+
+<script>
+    // Splash screen animation
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            document.getElementById('splash-screen').classList.add('fade-out');
+            setTimeout(function() {
+                document.getElementById('splash-screen').style.display = 'none';
+                document.getElementById('main-content').classList.remove('hidden');
+            }, 500);
+        }, 1500);
+    });
+
+    // Search functionality
+    const searchInput = document.getElementById('searchInput');
+    const fileSelect = document.getElementById('fileSelect');
+    const clearSearchBtn = document.getElementById('clearSearch');
+    const fileCount = document.getElementById('fileCount');
+    
+    if (searchInput && fileSelect) {
+        // Store all options
+        const allOptions = Array.from(fileSelect.options).slice(1); // Skip the first placeholder option
+        
+        searchInput.addEventListener('input', function() {
+            const searchTerm = this.value.toLowerCase().trim();
+            
+            // Show/hide clear button
+            if (searchTerm) {
+                clearSearchBtn.classList.add('visible');
+            } else {
+                clearSearchBtn.classList.remove('visible');
+            }
+            
+            // Clear existing options except the first one
+            fileSelect.innerHTML = '<option value="">-- फ़ाइल चुनें --</option>';
+            
+            // Filter and add matching options
+            const matchingOptions = allOptions.filter(option => 
+                option.value.toLowerCase().includes(searchTerm)
+            );
+            
+            matchingOptions.forEach(option => {
+                fileSelect.add(option.cloneNode(true));
+            });
+            
+            // Update file count
+            if (fileCount) {
+                if (searchTerm) {
+                    fileCount.textContent = `${matchingOptions.length} रिपोर्ट मिली (${allOptions.length} में से)`;
+                } else {
+                    fileCount.textContent = `कुल ${allOptions.length} रिपोर्ट उपलब्ध हैं`;
+                }
+            }
+            
+            // Reset select to placeholder
+            fileSelect.selectedIndex = 0;
+        });
+        
+        // Clear search button
+        if (clearSearchBtn) {
+            clearSearchBtn.addEventListener('click', function() {
+                searchInput.value = '';
+                searchInput.dispatchEvent(new Event('input'));
+                searchInput.focus();
+            });
+        }
+        
+        // Allow pressing Enter to select first result
+        searchInput.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && fileSelect.options.length > 1) {
+                fileSelect.selectedIndex = 1;
+                fileSelect.dispatchEvent(new Event('change'));
+            }
+        });
+    }
+</script>
+
+</body>
+</html>
