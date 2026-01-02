@@ -5,90 +5,24 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>रिपोर्ट - {{ filename }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
-    <style>
-        @media (max-width: 768px) {
-            .report-container {
-                display: block;
-            }
-            
-            .card {
-                margin-bottom: 20px;
-            }
-        }
-        
-        /* Make iframe embed tag work better on mobile */
-        .iframe-container {
-            position: relative;
-            width: 100%;
-            height: 600px;
-            background: #f5f5f5;
-        }
-        
-        .iframe-container embed,
-        .iframe-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-        }
-        
-        /* Mobile fallback button */
-        .mobile-fallback {
-            display: none;
-            text-align: center;
-            padding: 40px 20px;
-            background: #fff3cd;
-            border: 2px dashed #ffc107;
-            border-radius: 8px;
-        }
-        
-        .mobile-fallback p {
-            margin-bottom: 15px;
-            color: #856404;
-        }
-        
-        .mobile-fallback .btn {
-            display: inline-block;
-            padding: 12px 24px;
-            background: #02164f;
-            color: white;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: bold;
-            margin: 5px;
-        }
-        
-        .mobile-fallback .btn:hover {
-            background: #f37022;
-        }
-        
-        @media (max-width: 768px) {
-            .iframe-container {
-                height: 500px;
-            }
-            
-            /* Show fallback on mobile for embed tags */
-            .iframe-container.embed-container {
-                display: none;
-            }
-            
-            .mobile-fallback {
-                display: block;
-            }
-        }
-    </style>
 </head>
 <body>
+
 <header class="header">
     <img src="{{ url_for('static', filename='images/iocl-logo.png') }}" class="logo" alt="Logo">
     <h1>गोरखपुर एलपीजी बी.पी. हेतु जर्नी मैनेजमेंट रिपोर्ट (JRM)</h1>
 </header>
+
 <div class="container">
     
     <div class="back-button-container">
         <a href="/" class="back-btn">← वापस जाएं</a>
     </div>
+
     <h2>{{ filename }}</h2>
+
     <div class="report-container">
+
         <!-- Hindi PDF (from Google Drive) -->
         {% if hindi_exists %}
         <div class="card">
@@ -97,17 +31,7 @@
                 <a href="{{ hindi_download_url }}" class="download-btn" target="_blank">⬇ डाउनलोड करें</a>
             </div>
             <div class="iframe-container">
-                <iframe 
-                    src="{{ hindi_preview_url }}" 
-                    title="Hindi PDF" 
-                    allowfullscreen
-                    allow="autoplay">
-                </iframe>
-            </div>
-            <!-- Fallback message for any issues -->
-            <div style="margin-top: 10px; padding: 10px; background: #e3f2fd; border-radius: 4px; font-size: 0.9rem;">
-                <p style="margin: 0;">यदि PDF नहीं दिख रहा है, तो कृपया ऊपर "डाउनलोड करें" बटन पर क्लिक करें।</p>
-                <p style="margin: 5px 0 0 0;">If PDF is not visible, please click the "Download" button above.</p>
+                <iframe src="{{ hindi_preview_url }}" title="Hindi PDF" allowfullscreen></iframe>
             </div>
         </div>
         {% else %}
@@ -120,29 +44,16 @@
             </div>
         </div>
         {% endif %}
-        <!-- English PDF (from local storage) -->
+
+        <!-- English PDF (from Google Drive) -->
         {% if english_exists %}
         <div class="card">
             <div class="card-header">
                 <h3>अंग्रेज़ी पीडीएफ</h3>
-                <a href="{{ url_for('pdf_english', filename=filename) }}" class="download-btn" download>⬇ Download</a>
+                <a href="{{ english_download_url }}" class="download-btn" target="_blank">⬇ Download</a>
             </div>
-            
-            <!-- Desktop: Use embed -->
-            <div class="iframe-container embed-container">
-                <embed 
-                    src="{{ url_for('pdf_english', filename=filename) }}#toolbar=1&navpanes=1&scrollbar=1" 
-                    type="application/pdf"
-                    title="English PDF">
-                </embed>
-            </div>
-            
-            <!-- Mobile: Show buttons to open/download -->
-            <div class="mobile-fallback">
-                <p>📱 <strong>Mobile Device Detected</strong></p>
-                <p>PDF preview may not work on mobile browsers. Please use the buttons below:</p>
-                <a href="{{ url_for('pdf_english', filename=filename) }}" class="btn" target="_blank">📄 Open in New Tab</a>
-                <a href="{{ url_for('pdf_english', filename=filename) }}" class="btn" download>⬇ Download PDF</a>
+            <div class="iframe-container">
+                <iframe src="{{ english_preview_url }}" title="English PDF" allowfullscreen></iframe>
             </div>
         </div>
         {% else %}
@@ -155,24 +66,9 @@
             </div>
         </div>
         {% endif %}
+
     </div>
 </div>
 
-<script>
-    // Additional mobile detection and handling
-    function isMobileDevice() {
-        return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    }
-    
-    // If on mobile, ensure fallback is shown
-    if (isMobileDevice()) {
-        document.querySelectorAll('.embed-container').forEach(el => {
-            el.style.display = 'none';
-        });
-        document.querySelectorAll('.mobile-fallback').forEach(el => {
-            el.style.display = 'block';
-        });
-    }
-</script>
 </body>
 </html>
