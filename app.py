@@ -1,7 +1,6 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request
+from flask import Flask, render_template, send_from_directory, jsonify, request, make_response
 import os
 import json
-
 
 app = Flask(__name__)
 
@@ -12,7 +11,6 @@ GDRIVE_LINKS_FILE = os.path.join(BASE_DIR, "gdrive_links.json")
 
 # Create directories if they don't exist
 os.makedirs(ENGLISH_DIR, exist_ok=True)
-
 
 def load_gdrive_links():
     """Load Google Drive links from JSON file"""
@@ -26,7 +24,6 @@ def load_gdrive_links():
     except Exception as e:
         print(f"Error loading Google Drive links: {e}")
         return {}
-
 
 @app.route("/")
 def home():
@@ -49,7 +46,6 @@ def home():
     
     return render_template("home.html", files=files)
 
-
 @app.route("/view/<filename>")
 def view(filename):
     """View page showing both Hindi and English PDFs"""
@@ -62,6 +58,17 @@ def view(filename):
     hindi_data = gdrive_links.get(filename, {})
     hindi_exists = hindi_data.get('exists', False)
     
+    # Get the preview and download URLs
+    hindi_preview_url = hindi_data.get('preview_url', '')
+    hindi_download_url = hindi_data.get('download_url', '')
+    
+    # Debug print
+    print(f"File: {filename}")
+    print(f"Hindi exists: {hindi_exists}")
+    print(f"Hindi preview URL: {hindi_preview_url}")
+    print(f"Hindi download URL: {hindi_download_url}")
+    print(f"English exists: {english_exists}")
+    
     if not hindi_exists and not english_exists:
         return f"Error: File {filename} not found", 404
     
@@ -70,19 +77,24 @@ def view(filename):
         filename=filename,
         hindi_exists=hindi_exists,
         english_exists=english_exists,
-        hindi_preview_url=hindi_data.get('preview_url', ''),
-        hindi_download_url=hindi_data.get('download_url', '')
+        hindi_preview_url=hindi_preview_url,
+        hindi_download_url=hindi_download_url
     )
-
 
 @app.route("/pdf/english/<filename>")
 def pdf_english(filename):
-    """Serve English PDF file"""
+    """Serve English PDF file with proper headers for mobile compatibility"""
     try:
-        return send_from_directory(ENGLISH_DIR, filename)
+        response = make_response(send_from_directory(ENGLISH_DIR, filename))
+        response.headers['Content-Type'] = 'application/pdf'
+        response.headers['Content-Disposition'] = f'inline; filename="{filename}"'
+        # Add headers to allow embedding
+        response.headers['X-Frame-Options'] = 'SAMEORIGIN'
+        response.headers['Content-Security-Policy'] = "frame-ancestors 'self'"
+        return response
     except Exception as e:
+        print(f"Error loading English PDF: {e}")
         return f"Error loading English PDF: {e}", 404
-
 
 @app.route("/api/search")
 def search_files():
@@ -116,7 +128,6 @@ def search_files():
             'error': str(e),
             'files': []
         })
-
 
 if __name__ == "__main__":
     app.run(debug=True, host='0.0.0.0', port=5000)
