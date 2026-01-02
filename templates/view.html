@@ -5,6 +5,37 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>रिपोर्ट - {{ filename }}</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <style>
+        @media (max-width: 768px) {
+            .report-container {
+                display: block;
+            }
+            
+            .card {
+                margin-bottom: 20px;
+            }
+        }
+        
+        /* Make iframe embed tag work better on mobile */
+        .iframe-container {
+            position: relative;
+            width: 100%;
+            height: 600px;
+        }
+        
+        .iframe-container embed,
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        @media (max-width: 768px) {
+            .iframe-container {
+                height: 500px;
+            }
+        }
+    </style>
 </head>
 <body>
 
@@ -53,7 +84,11 @@
                 <a href="{{ url_for('pdf_english', filename=filename) }}" class="download-btn" download>⬇ Download</a>
             </div>
             <div class="iframe-container">
-                <iframe src="{{ url_for('pdf_english', filename=filename) }}" title="English PDF"></iframe>
+                <embed 
+                    src="{{ url_for('pdf_english', filename=filename) }}#toolbar=1&navpanes=1&scrollbar=1" 
+                    type="application/pdf"
+                    title="English PDF">
+                </embed>
             </div>
         </div>
         {% else %}
